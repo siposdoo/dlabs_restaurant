@@ -106,15 +106,15 @@ class OrderController extends Controller
             foreach ($order->order_items as $order_item) {
                 $order_item = (object) $order_item;
 
-                $temp_order_item["order_item_id"]=$order_item->id;
-                $temp_order_item["item_id"]=$order_item->item_id;
-                $temp_order_item["status"]=$order_item->status;
+                $temp_order_item["order_item_id"] = $order_item->id;
+                $temp_order_item["item_id"] = $order_item->item_id;
+                $temp_order_item["status"] = $order_item->status;
 
                 array_push($response["order_items"], $temp_order_item);
             }
             $response["order_total"] = $order->total;
 
-             return $this->successResponse($response);
+            return $this->successResponse($response);
         } catch (\Throwable $e) {
 
             return $this->errorResponse($e->getMessage());

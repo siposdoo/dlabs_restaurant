@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrderItems;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use App\Traits\ResponseHelper;
 
 class OrderItemsController extends Controller
 {
+    use ResponseHelper;
     /**
      * Display a listing of the resource.
      *
@@ -67,9 +70,27 @@ class OrderItemsController extends Controller
      * @param  \App\Models\OrderItems  $orderItems
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, OrderItems $orderItems)
+    public function update(Request $request, $order_item_id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'order_item_id' => 'required|string|max:255',
+            'item_id' => 'required|string|max:255',
+            'status' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationFailed($validator->errors());
+        }
+
+        try {
+            $order_item = OrderItems::where([['id', $request->order_item_id], ['item_id', $request->item_id]])->first();
+            $order_item->status=$request->status;
+            $order_item->save();
+            return $this->successResponse($order_item);
+        } catch (\Throwable $e) {
+
+            return $this->errorResponse($e->getMessage());
+        }
     }
 
     /**

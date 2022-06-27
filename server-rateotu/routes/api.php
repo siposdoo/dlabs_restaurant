@@ -27,6 +27,12 @@ Route::get('/orders/{id}', [Controllers\OrderController::class, 'show']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/checkrole', [AuthController::class, 'checkRole']);
+
+    Route::put('/order-items/{id}', [Controllers\OrderItemsController::class, 'update']);
+
+    Route::get('/orders', [Controllers\OrderController::class, 'index']);
+
+
 });
 
 Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
