@@ -26,6 +26,7 @@ Route::post('/orders', [Controllers\OrderController::class, 'store']);
 Route::get('/orders/{id}', [Controllers\OrderController::class, 'show']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
+    
     Route::get('/checkrole', [AuthController::class, 'checkRole']);
 
     Route::put('/order-items/{id}', [Controllers\OrderItemsController::class, 'update']);

@@ -17,9 +17,41 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $r)
     {
-        //
+        try{
+        $orders = Order::with(["order_items"])->get();
+        if (json_decode($r->has_unfinished_items)) {
+            $orders = Order::with(["order_items"])->whereHas("order_items", function ($query) {
+                $query->where('status', '!=', 'delivered');
+            })->get();
+        }
+         $data=array();
+
+        foreach ($orders as $order) {
+        $response["order_id"] = $order->id;
+        $response["table_id"] = $order->table_id;
+        $response["order_items"] = array();
+        foreach ($order->order_items as $order_item) {
+            $order_item = (object) $order_item;
+
+            $temp_order_item["order_item_id"] = $order_item->id;
+            $temp_order_item["item_id"] = $order_item->item_id;
+            $temp_order_item["status"] = $order_item->status;
+
+            array_push($response["order_items"], $temp_order_item);
+        }
+        array_push($data, $response);
+
+        
+    }
+ 
+        return $this->successResponse($data);
+
+    } catch (\Throwable $e) {
+
+        return $this->errorResponse($e->getMessage());
+    }
     }
 
     /**
