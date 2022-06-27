@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Traits\ResponseHelper;
 
 
 class AuthController extends Controller
 {
-
+    use ResponseHelper;
 
     public function login(Request $request)
     {
@@ -64,51 +65,17 @@ class AuthController extends Controller
                 $user->assignRole('Customer');
             }
 
-            $data = [
-                'user' => [
-                    'username' => $user->username,
-                    'role' => $user->role,
-
-                ]
-            ];
-
-            return $this->successResponse($data);
+            
+            return $this->successResponse($user);
         } catch (\Throwable $e) {
             
-            return $this->errorResponse($e, 404);
-        }
+            return response()->json($e, 404);        }
     }
-    public function successResponse($data, $status_code = 200, $message = null)
-    {
-        $error = [
-            "code" => $status_code,
-            "message" => $message,
-            "data" => $data
-        ];
-        return response()->json($error, $status_code);
-    }
+   
     public function checkRole()
     {
         $data['role'] = Auth::user()->roles->pluck("name")->first();
         return $this->successResponse($data, 201);
     }
-    public function errorResponse($errors, $status_code = 400, $message = null)
-    {
-        $error = [
-            "code" => $status_code,
-            "message" => $message,
-            "data" => null,
-            "errors" => $errors,
-        ];
-        return response()->json($error, $status_code);
-    }
-
-    public function validationFailed($input_errors, $message = null, $status_code = 400)
-    {
-        $errors = [];
-        foreach ($input_errors->all() as $msg) {
-            array_push($errors, $msg);
-        }
-        return $this->errorResponse($errors, $status_code, $message);
-    }
+   
 }
