@@ -17,4 +17,6 @@ class OrderItems extends Model
         'item_id'
         
     ];
+
+   
 }

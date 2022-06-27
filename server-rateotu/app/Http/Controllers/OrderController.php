@@ -11,7 +11,7 @@ use App\Traits\OrderHelper;
 
 class OrderController extends Controller
 {
-    use ResponseHelper,OrderHelper;
+    use ResponseHelper, OrderHelper;
     /**
      * Display a listing of the resource.
      *
@@ -50,33 +50,39 @@ class OrderController extends Controller
         }
 
         try {
-            $orderTotal=0;
-            foreach($request->items as $item){
+            $orderTotal = 0;
+            foreach ($request->items as $item) {
                 $item = (object) $item;
                 $orderTotal += $this->getPriceFromItem($item->item_id) * $item->quantity;
             }
-             $input = [
+            $input = [
                 'table_id' => $request->table_id,
                 'total' => $orderTotal
-             ];
-             $order = new Order($input);
-             $order->save();
+            ];
+            $order = new Order($input);
+            $order_item_response = array();
+            $order->save();
 
-                foreach($request->items as $item){
-                    $item = (object) $item;
-                    $order_item = new OrderItems();
-                    $order_item->status="ordered";
-                    $order_item->price=$this->getPriceFromItem($item->item_id);
-                    $order_item->order_id=$order->id;
-                    $order_item->item_id=$item->item_id;
-                    $order_item->quantity=$item->quantity;
-                    $order_item->save();
-                    
-                
+            foreach ($request->items as $item) {
+                $item = (object) $item;
+                $order_item = new OrderItems();
+                $order_item->status = "ordered";
+                $order_item->price = $this->getPriceFromItem($item->item_id);
+                $order_item->order_id = $order->id;
+                $order_item->item_id = $item->item_id;
+                $order_item->quantity = $item->quantity;
+                $order_item->save();
+
+                $temp_item["order_item_id"] = $order_item->id;
+                $temp_item["item_id"] = $item->item_id;
+                $temp_item["status"] = $order_item->status;
+                array_push($order_item_response, $temp_item);
             }
-          
+            $data["order_id"] = $order->id;
+            $data["table_id"] = $request->table_id;
+            $data["order_items"] = $order_item_response;
 
-            return $this->successResponse($order);
+            return $this->successResponse($data);
         } catch (\Throwable $e) {
 
             return $this->errorResponse($e->getMessage());
@@ -89,9 +95,30 @@ class OrderController extends Controller
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Http\Response
      */
-    public function show(Order $order)
+    public function show($order_id)
     {
-        //
+        try {
+            $order = Order::with(["order_items"])->find($order_id);
+
+            $response["order_id"] = $order_id;
+            $response["table_id"] = $order->table_id;
+            $response["order_items"] = array();
+            foreach ($order->order_items as $order_item) {
+                $order_item = (object) $order_item;
+
+                $temp_order_item["order_item_id"]=$order_item->id;
+                $temp_order_item["item_id"]=$order_item->item_id;
+                $temp_order_item["status"]=$order_item->status;
+
+                array_push($response["order_items"], $temp_order_item);
+            }
+            $response["order_total"] = $order->total;
+
+             return $this->successResponse($response);
+        } catch (\Throwable $e) {
+
+            return $this->errorResponse($e->getMessage());
+        }
     }
 
     /**

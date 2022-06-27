@@ -21,7 +21,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 Route::get('/menu-items', [Controllers\ItemController::class, 'index']);
+
 Route::post('/orders', [Controllers\OrderController::class, 'store']);
+Route::get('/orders/{id}', [Controllers\OrderController::class, 'show']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/checkrole', [AuthController::class, 'checkRole']);

@@ -8,10 +8,19 @@ use App\Traits\Uuids;
 
 class Order extends Model
 {
-    use HasFactory,Uuids;
+    use HasFactory, Uuids;
 
     protected $fillable = [
         'table_id',
         'total'
     ];
+
+    public function order_items()
+    {
+        return $this->hasMany('App\Models\OrderItems');
+    }
+    public function order_table()
+    {
+        return $this->hasOne('App\Models\Table', 'id', 'table_id');
+    }
 }
