@@ -17,6 +17,6 @@ use App\Http\Controllers\API\AuthController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
-Route::middleware(['auth:sanctum','role:Waiter'])->group(function () {
+Route::middleware(['auth:sanctum','role:waiter'])->group(function () {
     Route::get('/checkrole', [AuthController::class, 'checkRole']);
 });

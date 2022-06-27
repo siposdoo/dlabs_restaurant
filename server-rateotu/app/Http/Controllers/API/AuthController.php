@@ -16,7 +16,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'username' => 'required',
             'role' => 'required|string',
         ]);
 
@@ -24,29 +24,23 @@ class AuthController extends Controller
             return $this->validationFailed($validator->errors());
         }
 
-        $user = User::where('name', $request->name)->where('role', $request->role)->get()->first();
+        $user = User::where('username', $request->username)->where('role', $request->role)->get()->first();
 
         if ($user) {
-            $user->tokens()->delete();
-
             $auth_token = $user->createToken('authToken')->plainTextToken;
             $data = [
-                'user' => [
-                    'name' => $user->name,
-                    'role' => $user->role
-                ],
-                'auth_token' => $auth_token ?? null
+                'bearer_token' => $auth_token ?? null
             ];
 
-            return $this->successResponse($data);
-        } else {
+            return response()->json($data, 200);      
+          } else {
             return $this->errorResponse(["Invalid Login Credentials!"]);
         }
     }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:users',
+            'username' => 'required|string|max:255|unique:users',
             'role' => 'required|string'
 
         ]);
@@ -57,7 +51,7 @@ class AuthController extends Controller
 
         try {
             $input = [
-                'name' => $request->name,
+                'username' => $request->username,
                 'role' => $request->role
 
             ];
@@ -72,7 +66,7 @@ class AuthController extends Controller
 
             $data = [
                 'user' => [
-                    'name' => $user->name,
+                    'username' => $user->username,
                     'role' => $user->role,
 
                 ]
@@ -80,7 +74,7 @@ class AuthController extends Controller
 
             return $this->successResponse($data);
         } catch (\Throwable $e) {
-            var_dump($e);
+            
             return $this->errorResponse($e, 404);
         }
     }
